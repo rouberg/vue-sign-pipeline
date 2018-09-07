@@ -2,11 +2,19 @@
   "name": "vue-sign-pipeline",
   "version": "1.0.0",
   "description": "A vue component to pipeline signature",
-  "main": "index.js",
   "repository": "git@github.com:rouberg/vue-sign-pipeline.git",
   "author": "rouberg",
   "license": "MIT",
   "private": false,
+  "main": "dist/sign-pipeline.umd.js",
+  "module": "dist/sign-pipeline.esm.js",
+  "unpkg": "dist/sign-pipeline.min.js",
+  "scripts": {
+    "build": "npm run build:umd & npm run build:es & npm run build:unpkg",
+    "build:umd": "webpack --config webpack.config.js",
+    "build:es": "webpack --config webpack.config.js",
+    "build:unpkg": "webpack --config webpack.config.js"
+  },
   "dependencies": {
     "babel-runtime": "^6.26.0",
     "vue": "^2.5.17"
@@ -23,6 +31,8 @@
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-node": "^7.0.1",
     "eslint-plugin-promise": "^4.0.1",
-    "eslint-plugin-standard": "^4.0.0"
+    "eslint-plugin-standard": "^4.0.0",
+    "eslint-plugin-vue": "^4.7.1",
+    "webpack": "^4.17.2"
   }
 }
