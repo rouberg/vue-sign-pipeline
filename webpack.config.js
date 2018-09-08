@@ -1,9 +1,9 @@
-// const webpack = require('webpack')
-const path = require('path')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = function (env, args) {
+  const isProduction = args['p']
+  const sourceMap = !isProduction
   const module = {
     rules: [
       {
@@ -52,27 +52,27 @@ module.exports = function (env, args) {
               {
                 loader: 'vue-style-loader',
                 options: {
-                  sourceMap: true
+                  sourceMap
                 }
               },
               {
                 loader: 'css-loader',
                 options: {
                   modules: true,
-                  sourceMap: true,
+                  sourceMap,
                   localIdentName: '[name]-[local]_[hash:base64:6]'
                 }
               },
               {
                 loader: 'postcss-loader',
                 options: {
-                  sourceMap: true
+                  sourceMap
                 }
               },
               {
                 loader: 'sass-loader',
                 options: {
-                  sourceMap: true
+                  sourceMap
                 }
               }
             ]
@@ -83,26 +83,26 @@ module.exports = function (env, args) {
               {
                 loader: 'vue-style-loader',
                 options: {
-                  sourceMap: true
+                  sourceMap
                 }
               },
               {
                 loader: 'css-loader',
                 options: {
-                  sourceMap: true,
+                  sourceMap,
                   importLoaders: 2
                 }
               },
               {
                 loader: 'postcss-loader',
                 options: {
-                  sourceMap: true
+                  sourceMap
                 }
               },
               {
                 loader: 'sass-loader',
                 options: {
-                  sourceMap: true
+                  sourceMap
                 }
               }
             ]
@@ -111,37 +111,17 @@ module.exports = function (env, args) {
       }
     ]
   }
-  return {
-    mode: 'development',
-    entry: {
-      test: path.resolve('test/index.js')
-    },
+
+  const shared = {
     resolve: {
       extensions: ['.js', '.vue', '.json'],
       alias: {
         'vue$': 'vue/dist/vue.esm.js'
       }
     },
-    target: 'web',
-    devtool: 'inline-source-map',
-    devServer: {
-      contentBase: false,
-      port: 9100,
-      clientLogLevel: 'warning'
-    },
     module,
-    plugins: [
-      new VueLoaderPlugin(),
-      new HtmlWebpackPlugin({
-        template: 'index.html'
-      })
-    ],
     node: {
-      // prevent webpack from injecting useless setImmediate polyfill because Vue
-      // source contains it (although only uses it if it's native).
       setImmediate: false,
-      // prevent webpack from injecting mocks to Node native modules
-      // that does not make sense for the client
       dgram: 'empty',
       fs: 'empty',
       net: 'empty',
@@ -149,4 +129,68 @@ module.exports = function (env, args) {
       child_process: 'empty'
     }
   }
+  const developmentConfig = {
+    mode: 'development',
+    entry: {
+      test: './test'
+    },
+    ...shared,
+    target: 'web',
+    devtool: 'inline-source-map',
+    devServer: {
+      contentBase: false,
+      port: 9100,
+      clientLogLevel: 'warning'
+    },
+    plugins: [
+      new VueLoaderPlugin(),
+      new HtmlWebpackPlugin({
+        template: 'index.html'
+      })
+    ]
+  }
+
+  const productionShared = {
+    mode: 'production',
+    ...shared,
+    entry: './src',
+    optimization: {
+      minimize: true
+    },
+    plugins: [
+      new VueLoaderPlugin()
+    ],
+    externals: {
+      vue: {
+        commonjs: 'vue',
+        amd: 'vue',
+        root: 'Vue'
+      }
+    }
+  }
+
+  const productionConfig = [
+    {
+      ...productionShared,
+      output: {
+        filename: './sign-pipeline.amd.js',
+        libraryTarget: 'amd'
+      },
+      target: 'node'
+    }, {
+      ...productionShared,
+      output: {
+        filename: './sign-pipeline.commonjs.js',
+        libraryTarget: 'commonjs'
+      },
+      target: 'node'
+    }, {
+      ...productionShared,
+      output: {
+        filename: './sign-pipeline.js',
+        libraryTarget: 'amd'
+      },
+      target: 'web'
+    }]
+  return isProduction ? productionConfig : developmentConfig
 }

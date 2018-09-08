@@ -1,16 +1,17 @@
 {
   "name": "vue-sign-pipeline",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.0",
   "description": "A vue component to pipeline signature",
   "repository": "git@github.com:rouberg/vue-sign-pipeline.git",
   "author": "rouberg",
   "license": "MIT",
   "private": false,
-  "main": "dist/sign-pipeline.umd.js",
-  "module": "src/r-sign-pipeline.vue",
-  "unpkg": "dist/sign-pipeline.min.js",
+  "main": "dist/sign-pipeline.amd.js",
+  "module": "dist/sign-pipeline.commonjs.js",
+  "unpkg": "https://github.com/rouberg/vue-sign-pipeline/dist/sign-pipeline.js",
+  "browser": "src/index.js",
   "scripts": {
-    "build": "webpack -p",
+    "build": "webpack --config webpack.config.js -p",
     "dev": "webpack-dev-server --config webpack.config.js"
   },
   "dependencies": {
