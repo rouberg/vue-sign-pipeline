@@ -48,9 +48,7 @@ const theme = {
         height: 90
       }
     }
-  },
-  // 主题色，主要影响按钮颜色
-  primaryColor: '#00aeff'
+  }
 }
 
 Object.freeze(theme)

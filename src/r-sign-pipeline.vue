@@ -1,51 +1,47 @@
 <template>
-  <div class="component-commit">
-    <button type="button" class="btn-sign" @click="showPanel">
+  <div :class="css.component">
+    <button type="button" :class="css.pen" @click="showPanel">
       <slot name="btn">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
           <path d="M919.7 87.5L847.5 10 73.9 779.5 35.1 889.2l115.1-32.3L919.7 87.5zM35.1 956.3h929.8V990H35.1v-33.7z"/>
         </svg>
       </slot>
     </button>
-    <div v-transfer-dom class="panel-commit" v-show="open">
-      <p v-if="finish" class="tips-content">签字内容预览：</p>
-      <h3 :class="{['title-preview']: finish}">
-        <span v-for="(word, index) in commit" :key="index" :class="{active: index===activeIndex, preview: finish}">
+    <div :class="[css.panel,{[css.preview]: finish}]" v-show="open" ref="panel">
+      <h2 v-if="finish" :class="css.tips">签字内容预览：</h2>
+      <h3>
+        <span v-for="(word, index) in commit" :key="index" :class="{[css.active]: index===activeIndex, [css.preview]: finish}">
           <img v-if="activeIndex > index" :src="images[index].image"/>
           <template v-else>{{word}}</template>
         </span>
       </h3>
-      <div class="box" @touchmove.passive="onTouch" @touchstart.passive="onTouchStart" @touchend.passive="onTouchEnd" v-show="!finish">
-        <span class="tips">{{commit[activeIndex]}}</span>
+      <div :class="css.box" @touchmove.passive="onTouch" @touchstart.passive="onTouchStart" @touchend.passive="onTouchEnd" v-show="!finish">
+        <span :class="css.placeholder">{{commit[activeIndex]}}</span>
         <canvas ref="canvas"></canvas>
       </div>
-      <div class="bar-switch" :class="{preview: finish}">
-        <span class="tips">自动切换到下一字：</span>
-        <r-switch v-model="autoSwitch"/>
+      <div :class="css.switch">
+        <span>自动切换到下一字：</span>
+        <r-switch v-model="autoSwitch" @toggle="toggleAutoSwitch"/>
       </div>
-      <div class="bar">
-        <button class="btn btn-primary btn-reverse" @click.native.passive="cancel">取消</button>
-        <button class="btn btn-primary" @click.native.passive="backspace" :disabled="!deletable">删除</button>
-        <button class="btn btn-primary btn-reverse" @click.native.passive="nextWord" v-if="!autoSwitch" :disabled="finish">下一字</button>
-        <button class="btn btn-primary" @click.native.passive="confirm" :disabled="!finish">确定</button>
-      </div>
+      <footer :class="css.bar">
+        <button type="button" :class="css.reverse" @click.passive="cancel">取消</button>
+        <button type="button" @click.passive="backspace" :disabled="!deletable">删除</button>
+        <button type="button" :class="css.reverse" @click.passive="nextWord" v-if="!autoSwitch" :disabled="finish">下一字</button>
+        <button type="button" @click.passive="confirm" :disabled="!finish">确定</button>
+      </footer>
     </div>
   </div>
 </template>
 <script>
-  import TransferDom from './directives/transfer-dom'
   import untilHas from './utils/untilHas'
   import untilImageCreated from './utils/untilImageCreated'
   import deepMerge from './utils/deepMerge'
   import defaultTheme from './defaultTheme'
   import RSwitch from './r-switch'
   export default {
-    name: 'r-commit',
+    name: 'sign-pipeline',
     components: {
       RSwitch
-    },
-    directives: {
-      TransferDom
     },
     props: {
       commit: {
@@ -134,7 +130,7 @@
       // 计算目标结点相对于文档的坐标原点的偏移量
       calcOffset (target, offset = {}) {
         let { x = 0, y = 0 } = offset
-        if (target === document || target.classList.contains('panel-commit')) {
+        if (target === this.$refs.panel) {
           return offset
         } else {
           x += target.clientLeft + target.offsetLeft
@@ -344,12 +340,17 @@
         return Promise.all(promises).then(() => {
           return mergeCanvas.toDataURL('image/jpeg', this.config.target.quality)
         })
+      },
+      toggleAutoSwitch () {
+        if (this.autoSwitch && this.points.length) {
+          this.nextWord()
+        }
       }
     }
   }
 </script>
-<style lang="scss">
-  .btn-sign {
+<style lang="scss" module="css">
+  .pen {
     width: 40px;
     height: 40px;
     display: flex;
@@ -362,7 +363,7 @@
     }
   }
 
-  .panel-commit {
+  .panel {
     position: fixed;
     width: 100%;
     height: 100%;
@@ -376,10 +377,11 @@
     align-items: stretch;
     justify-content: flex-start;
 
-    .tips-content {
+    h2 {
       font-size: 14px;
       color: #999;
       margin: 10px;
+      font-weight: normal;
     }
 
     h3 {
@@ -391,10 +393,6 @@
       max-height: calc(100vh - 90px);
       overflow-y: auto;
 
-      &.title-preview {
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
-      }
-
       span {
         display: inline-block;
         width: 24px;
@@ -403,11 +401,6 @@
         text-align: center;
         float: left;
         margin: 0 -1px;
-      }
-
-      .preview {
-        width: 60px;
-        height: 60px;
       }
 
       .active {
@@ -420,15 +413,49 @@
         width: 100%;
       }
     }
+  }
 
-    .box {
-      width: 360px;
-      height: 360px;
-      margin: auto;
-      position: relative;
-      overflow: hidden;
-      z-index: 0;
-      border: 1px solid #ddd;
+  .box {
+    width: 360px;
+    height: 360px;
+    margin: auto;
+    position: relative;
+    overflow: hidden;
+    z-index: 0;
+    border: 1px solid #ddd;
+
+    &::before,
+    &::after {
+      content: ' ';
+      position: absolute;
+      top: 50%;
+      left: 180px;
+      border-top: 1px dashed #eee;
+      width: 510px;
+      z-index: -2;
+    }
+
+    &::before {
+      transform: translateX(-50%) rotate(45deg);
+    }
+
+    &::after {
+      transform: translateX(-50%) rotate(-45deg);
+    }
+
+    .placeholder {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      color: #ddd;
+      font-size: 160px;
+      line-height: 360px;
+      text-align: center;
+      font-family: '宋体';
+      box-sizing: border-box;
+      z-index: -1;
 
       &::before,
       &::after {
@@ -437,93 +464,94 @@
         top: 50%;
         left: 180px;
         border-top: 1px dashed #eee;
-        width: 510px;
+        width: 360px;
         z-index: -2;
       }
 
       &::before {
-        transform: translateX(-50%) rotate(45deg);
+        transform: translateX(-50%);
       }
 
       &::after {
-        transform: translateX(-50%) rotate(-45deg);
-      }
-
-      .tips {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        color: #ddd;
-        font-size: 160px;
-        line-height: 360px;
-        text-align: center;
-        font-family: '宋体';
-        box-sizing: border-box;
-        z-index: -1;
-
-        &::before,
-        &::after {
-          content: ' ';
-          position: absolute;
-          top: 50%;
-          left: 180px;
-          border-top: 1px dashed #eee;
-          width: 360px;
-          z-index: -2;
-        }
-
-        &::before {
-          transform: translateX(-50%);
-        }
-
-        &::after {
-          transform: translateX(-50%) rotate(90deg);
-        }
-      }
-
-      canvas {
-        width: 100%;
-        height: 100%;
+        transform: translateX(-50%) rotate(90deg);
       }
     }
 
-    .bar-switch {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #999;
-      font-size: 12px;
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .switch {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #999;
+    font-size: 12px;
+    height: 30px;
+    margin: 8px 10px;
+
+    .tips {
+      margin-right: 10px;
+    }
+  }
+
+  .bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0;
+
+    $color-primary: #00aeff;
+    $color-reverse: white;
+    $color-disabled: #c0c0c0;
+
+    button {
+      border-radius: 4px;
+      border: 1px solid $color-primary;
+      text-align: center;
+      box-sizing: border-box;
+      padding-right: 15px;
+      padding-left: 15px;
+      outline: 0 none;
+      margin: 0 8px;
       height: 30px;
-      margin: 8px 10px;
+      font-size: 14px;
+      background-color: $color-primary;
+      color: $color-reverse;
 
-      &.preview {
-        margin-top: auto;
+      &[disabled] {
+        background-color: $color-disabled;
+        border-color: $color-disabled;
       }
 
-      .tips {
-        margin-right: 10px;
+      &.reverse {
+        border-color: $color-primary;
+        background-color: transparent;
+        color: $color-primary;
+
+        &[disabled] {
+          background-color: transparent;
+          border-color: $color-disabled;
+          color: $color-disabled;
+        }
+      }
+    }
+  }
+
+  .preview {
+    h3 {
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+
+      span {
+        width: 60px;
+        height: 60px;
       }
     }
 
-    .bar {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 10px 0;
-
-      .btn {
-        margin: 0 8px;
-        height: 30px;
-        font-size: 14px;
-      }
-
-      .btn-back {
-        border: 0 none;
-        background-color: #999;
-        color: white;
-      }
+    .switch {
+      margin-top: auto;
     }
   }
 </style>
