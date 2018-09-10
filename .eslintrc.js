@@ -5,7 +5,7 @@ module.exports = {
     sourceType: 'module'
   },
   extends: [
-    'plugin:vue/recommended',
+    'plugin:vue/essential',
     'standard'
   ],
   env: {

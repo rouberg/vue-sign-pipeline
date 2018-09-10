@@ -2,21 +2,21 @@
   <span :class="[css.component, {[css.on]:value}]" @click="toggle"><i :class="[css.block]"></i></span>
 </template>
 <script>
-  export default {
-    name: 'r-switch',
-    model: {
-      event: 'toggle',
-      prop: 'value'
-    },
-    props: {
-      value: Boolean
-    },
-    methods: {
-      toggle () {
-        this.$emit('toggle', !this.value)
-      }
+export default {
+  name: 'r-switch',
+  model: {
+    event: 'toggle',
+    prop: 'value'
+  },
+  props: {
+    value: Boolean
+  },
+  methods: {
+    toggle () {
+      this.$emit('toggle', !this.value)
     }
   }
+}
 </script>
 <style lang="scss" module="css">
   $color-primary: #00aeff;
