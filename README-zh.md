@@ -86,3 +86,6 @@ const theme = {
   }
 }
 ```
+
+签名结束后会有一个sign事件，sign事件中会返回签名结果。
+签名结果是一个base64串，MIME-TYPE 是`image/jpeg`。
