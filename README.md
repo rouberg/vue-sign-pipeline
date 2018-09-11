@@ -1,7 +1,7 @@
 # vue-sign-pipeline
 A vue component to pipeline signature.
 
-Now just support webpack@4 && babel@7 (@babel namespaced)
+Now just support `webpack@4` && `babel@7 (@babel namespaced)`
 
 **`@props commit`**
 
@@ -69,6 +69,6 @@ const theme = {
 
 when finisth signature, we can capture `sign` event in component.
 
-result is a `dataURL`, MIME-TYPE is `image/jepg`.
+result is a `dataURL`, MIME-TYPE is `image/jpeg`.
 
 [中文文档](./README-zh.md)
